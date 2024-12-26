@@ -323,6 +323,11 @@ if __name__ == '__main__':
     app.run(debug=True)  # For local development
 
 # Vercel handler
-def handler(event, context):
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+def handler(request):
     """Handle requests in a serverless context."""
-    return app(event, context) 
+    with app.request_context(request):
+        return app.wsgi_app(request.environ, lambda s, r: r) 

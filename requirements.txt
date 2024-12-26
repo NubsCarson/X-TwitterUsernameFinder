@@ -10,4 +10,5 @@ base58==2.1.1
 requests==2.31.0
 gevent-websocket==0.10.1
 google-generativeai==0.3.2
-nest-asyncio==1.6.0 
+nest-asyncio==1.6.0
+werkzeug==3.0.1 
