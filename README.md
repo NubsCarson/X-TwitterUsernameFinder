@@ -1,9 +1,9 @@
 # 🎯 RareHandle - Based Username Generator
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Twitter](https://img.shields.io/twitter/follow/MoneroSolana?style=social)](https://twitter.com/MoneroSolana)
 
-> 🚀 Generate ultra-rare X (Twitter) usernames using AI. No cap.
+> 🚀 Generate and validate ultra-rare X (Twitter) usernames using AI. Instantly check if they're available, taken, or suspended. No cap.
 
 ## 🌟 Documentation That Slaps
 - [🤝 Contributing Guidelines](CONTRIBUTING.md) - How to be a chad contributor
@@ -13,8 +13,10 @@
 
 ## 🌟 Features That Slap
 
-- 🧠 Multiple AI models (GPT-4, Claude, Gemini) for galaxy brain ideas
-- ⚡ Real-time username checks that actually work
+- 🧠 Multiple AI models (GPT-4, Claude, Gemini) for galaxy brain username ideas
+- ⚡ Real-time username validation that actually works
+- 🎯 Instant checks for available, taken, and suspended usernames
+- 🔍 Smart filtering to find actually rare handles
 - 🎨 Clean UI that doesn't look like Web2 garbage
 - 💎 Chad features for pro users
 - ⚔️ Battle-tested Solana integration
@@ -59,15 +61,22 @@ python app.py
 3. Pick your AI model (they all go hard)
 4. Configure your preferences (make it yours)
 5. Generate some heat 🔥
-6. Save the rare ones
+6. Watch real-time validation:
+   - ✅ Available (snag these quick)
+   - ❌ Taken (already claimed)
+   - ⚠️ Suspended (might be available soon)
+7. Save the rare ones
 
 ## 🔥 Pro Features
 
-- 🧠 Access to gigabrain AI models
-- ⚡ Turbo mode for faster checks
-- 🎯 Priority support when you need it
-- ⚔️ Custom generation strategies
-- 📊 Bulk username checking
+- 🧠 Access to all AI models (OpenAI, Claude, Gemini)
+- ⚡ Unlimited username generation
+- 🎯 Rare username finder algorithm
+- 🔍 Advanced filtering options
+- 💫 Priority API access
+- 🚀 Faster validation speeds
+- 💎 Early access to new features
+- 🛡️ Premium support
 
 ## 🛠️ Built With
 
