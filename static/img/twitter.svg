@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200">
+  <defs>
+    <!-- Gradient definitions -->
+    <linearGradient id="solanaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9945FF">
+        <animate attributeName="stop-color" values="#9945FF;#14F195;#9945FF" dur="8s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#14F195">
+        <animate attributeName="stop-color" values="#14F195;#9945FF;#14F195" dur="8s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    
+    <!-- Background pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    </pattern>
+    
+    <!-- Filters for glow effects -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#1A1A1A"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+  
+  <!-- Animated circles -->
+  <circle cx="100" cy="100" r="20" fill="none" stroke="url(#solanaGradient)" stroke-width="2">
+    <animate attributeName="r" values="20;25;20" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="700" cy="100" r="20" fill="none" stroke="url(#solanaGradient)" stroke-width="2">
+    <animate attributeName="r" values="25;20;25" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Main text with gradient -->
+  <text x="400" y="120" font-family="Arial, sans-serif" font-size="48" text-anchor="middle" filter="url(#glow)">
+    <tspan fill="url(#solanaGradient)">X-TwitterUserFinder</tspan>
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="4s" repeatCount="indefinite"/>
+  </text>
+  
+  <!-- Technology indicator -->
+  <g transform="translate(380, 140)">
+    <text x="20" y="20" font-family="Arial, sans-serif" font-size="14" fill="#14F195" text-anchor="middle">
+      Powered by AI and Web3 Technology
+    </text>
+    <rect x="0" y="25" width="40" height="4" fill="url(#solanaGradient)">
+      <animate attributeName="width" values="0;40;0" dur="2s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Decorative elements -->
+  <path d="M 50,50 L 750,50" stroke="url(#solanaGradient)" stroke-width="1" fill="none">
+    <animate attributeName="d" values="M 50,50 L 750,50;M 50,55 L 750,45;M 50,50 L 750,50" dur="5s" repeatCount="indefinite"/>
+  </path>
+  <path d="M 50,150 L 750,150" stroke="url(#solanaGradient)" stroke-width="1" fill="none">
+    <animate attributeName="d" values="M 50,150 L 750,150;M 50,145 L 750,155;M 50,150 L 750,150" dur="5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Creator credit -->
+  <text x="400" y="180" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle" opacity="0.8">
+    made by @MoneroSolana
+  </text>
+</svg>

@@ -1,3 +1,10 @@
+<div align="center">
+    <h1>
+        <img src="static/img/twitter.svg" width="32" height="32" style="vertical-align: middle; margin-right: 10px">
+        Twitter Handle Finder
+    </h1>
+</div>
+
 # 🎯 RareHandle - Based Username Generator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
