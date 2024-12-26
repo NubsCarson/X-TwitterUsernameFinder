@@ -335,4 +335,8 @@ def get_config():
 
 if __name__ == '__main__':
     load_dotenv()
-    socketio.run(app, debug=True, host='127.0.0.1', port=5000) 
+    app.run(debug=True)  # For local development
+    
+# Vercel handler
+def handler(request):
+    return app 
