@@ -5,6 +5,12 @@
 
 > 🚀 Generate ultra-rare X (Twitter) usernames using AI. No cap.
 
+## 🌟 Documentation That Slaps
+- [🤝 Contributing Guidelines](CONTRIBUTING.md) - How to be a chad contributor
+- [🛡️ Security Policy](SECURITY.md) - Keep it secure, keep it based
+- [📜 License](LICENSE) - MIT vibes only
+- [💫 Code of Conduct](CODE_OF_CONDUCT.md) - How we roll
+
 ## 🌟 Features That Slap
 
 - 🧠 Multiple AI models (GPT-4, Claude, Gemini) for galaxy brain ideas
