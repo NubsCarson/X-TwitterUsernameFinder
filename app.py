@@ -1,6 +1,6 @@
-from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask import Flask, render_template, jsonify, request, send_from_directory, Response
 from flask_socketio import SocketIO, emit
-from flask_sqlalchemy import SQLAlchemy
+from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 import os
 import asyncio
@@ -25,27 +25,23 @@ nest_asyncio.apply()
 
 app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'fallback_secret_key_for_development')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pro_users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins="*")
-db = SQLAlchemy(app)
+app.config['MONGO_URI'] = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/aitwitter')
+socketio = SocketIO(app, cors_allowed_origins="*")
+mongo = PyMongo(app)
 
 # Create a new event loop for the application
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
-# Pro User Model
-class ProUser(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    wallet_address = db.Column(db.String(44), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+# Pro User operations moved to MongoDB
+def add_pro_user(wallet_address):
+    mongo.db.pro_users.insert_one({
+        'wallet_address': wallet_address,
+        'created_at': datetime.utcnow()
+    })
 
-    def __repr__(self):
-        return f'<ProUser {self.wallet_address}>'
-
-# Create tables
-with app.app_context():
-    db.create_all()
+def get_pro_user(wallet_address):
+    return mongo.db.pro_users.find_one({'wallet_address': wallet_address})
 
 class TwitterHandleChecker:
     def __init__(self, bearer_token):
@@ -153,7 +149,7 @@ def verify_wallet():
     
     try:
         # Check if user is already pro
-        pro_user = ProUser.query.filter_by(wallet_address=wallet_address).first()
+        pro_user = get_pro_user(wallet_address)
         if pro_user:
             print(f"Found existing pro user: {wallet_address}")
             return jsonify({'status': 'success', 'is_pro': True})
@@ -164,18 +160,14 @@ def verify_wallet():
             from nacl.signing import VerifyKey
             from nacl.exceptions import BadSignatureError
             
-            # Decode the public key from base58
             decoded_public_key = base58.b58decode(wallet_address)
             print(f"Decoded public key length: {len(decoded_public_key)}")
             
-            # For Solana, we need to use the whole public key as is
             verify_key = VerifyKey(bytes(decoded_public_key))
             
-            # Decode the signature from base64
             decoded_signature = base64.b64decode(signature)
             print(f"Decoded signature length: {len(decoded_signature)}")
             
-            # Verify the signature
             verify_key.verify(message.encode(), decoded_signature)
             print(f"Signature verified for wallet: {wallet_address}")
             return jsonify({'status': 'success', 'is_pro': False})
@@ -192,7 +184,7 @@ def verify_wallet():
         return jsonify({'status': 'error', 'message': str(e)}), 400
 
 @app.route('/add-pro-user', methods=['POST'])
-def add_pro_user():
+def add_pro_user_route():
     data = request.json
     wallet_address = data.get('wallet_address')
     signature = data.get('signature')
@@ -203,7 +195,7 @@ def add_pro_user():
     
     try:
         # Check if user is already pro
-        existing_user = ProUser.query.filter_by(wallet_address=wallet_address).first()
+        existing_user = get_pro_user(wallet_address)
         if existing_user:
             print(f"User already pro: {wallet_address}")
             return jsonify({'status': 'success'})
@@ -214,18 +206,14 @@ def add_pro_user():
             from nacl.signing import VerifyKey
             from nacl.exceptions import BadSignatureError
             
-            # Decode the public key from base58
             decoded_public_key = base58.b58decode(wallet_address)
             print(f"Decoded public key length: {len(decoded_public_key)}")
             
-            # For Solana, we need to use the whole public key as is
             verify_key = VerifyKey(bytes(decoded_public_key))
             
-            # Decode the signature from base64
             decoded_signature = base64.b64decode(signature)
             print(f"Decoded signature length: {len(decoded_signature)}")
             
-            # Verify the signature
             verify_key.verify(message.encode(), decoded_signature)
             print(f"Signature verified for new pro user: {wallet_address}")
         except BadSignatureError:
@@ -237,15 +225,12 @@ def add_pro_user():
             return jsonify({'status': 'error', 'message': f'Invalid signature: {str(sig_err)}'}), 400
         
         # Add user to pro users
-        pro_user = ProUser(wallet_address=wallet_address)
-        db.session.add(pro_user)
-        db.session.commit()
+        add_pro_user(wallet_address)
         print(f"Successfully registered pro user: {wallet_address}")
         
         return jsonify({'status': 'success'})
     except Exception as e:
         print(f"Pro user registration error: {str(e)}")
-        db.session.rollback()
         return jsonify({'status': 'error', 'message': str(e)}), 400
 
 @app.route('/check-usernames', methods=['POST'])
@@ -339,4 +324,27 @@ if __name__ == '__main__':
     
 # Vercel handler
 def handler(request):
-    return app 
+    """Handle requests in a serverless context."""
+    if request.method == 'POST':
+        with app.test_client() as client:
+            response = client.post(
+                request.url, 
+                json=request.json,
+                headers=request.headers
+            )
+            return Response(
+                response.get_data(),
+                status=response.status_code,
+                headers=dict(response.headers)
+            )
+    else:
+        with app.test_client() as client:
+            response = client.get(
+                request.url,
+                headers=request.headers
+            )
+            return Response(
+                response.get_data(),
+                status=response.status_code,
+                headers=dict(response.headers)
+            ) 
