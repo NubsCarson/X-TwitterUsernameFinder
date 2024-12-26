@@ -1,7 +1,6 @@
 <div align="center">
     <h1>
-        <img src="static/img/twitter.svg" width="32" height="32" style="vertical-align: middle; margin-right: 10px">
-        Twitter Handle Finder
+        <img src="static/img/twitter.svg" width="800" height="200" style="margin-bottom: 20px">
     </h1>
 </div>
 
