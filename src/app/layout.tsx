@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/Header/Header";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Twitter Username Finder",
-  description: "Find available Twitter handles and generate unique usernames using AI.",
+  title: "X Twitter Username Finder",
+  description: "Find available Twitter usernames using AI",
 };
 
 export default function RootLayout({
@@ -16,7 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} min-h-screen bg-black text-white`}>
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }

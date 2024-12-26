@@ -90,9 +90,11 @@ export default function WalletButton() {
     <Button
       onClick={walletConnected ? disconnectWallet : connectWallet}
       disabled={loading}
-      className="w-full"
+      size="sm"
+      variant="outline"
+      className="w-full bg-transparent hover:bg-gray-800"
     >
-      {loading ? 'Connecting...' : walletConnected ? `Connected: ${publicKey.slice(0, 4)}...${publicKey.slice(-4)}` : 'Connect Wallet'}
+      {loading ? 'Connecting...' : walletConnected ? `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}` : 'Connect Wallet'}
     </Button>
   );
 } 
