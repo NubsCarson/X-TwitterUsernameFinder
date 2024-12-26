@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
-import { UsernameGenerator } from '@/lib/ai';
+import { generateUsernames } from '@/lib';
 
 export async function POST(request: Request) {
   try {
-    const { provider, model, apiKey, prompt, numUsernames } = await request.json();
+    const { provider, model, apiKey, prompt, count } = await request.json();
 
-    const usernames = await UsernameGenerator({
-      provider,
-      model,
-      apiKey,
-      prompt,
-      numUsernames
-    });
+    if (!provider || !model || !apiKey || !prompt || !count) {
+      return NextResponse.json(
+        { error: 'Missing required parameters' },
+        { status: 400 }
+      );
+    }
+
+    const usernames = await generateUsernames(provider, model, apiKey, prompt, count);
 
     return NextResponse.json({ usernames });
   } catch (error) {

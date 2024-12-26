@@ -1,78 +1,57 @@
 import { TwitterApi } from 'twitter-api-v2';
 
-interface TwitterResponse {
-  data?: {
-    id: string;
-    name: string;
-    username: string;
-  }[];
-  errors?: {
-    detail: string;
-    title: string;
-    type: string;
-  }[];
+export interface HandleStatus {
+  username: string;
+  available: boolean;
+  error?: string;
 }
 
-interface HandleStatus {
-  username: string;
-  status: 'available' | 'taken' | 'suspended' | 'error';
-  error?: string;
+interface TwitterError {
+  code?: number;
+  message: string;
+}
+
+export async function checkHandle(bearerToken: string, username: string): Promise<HandleStatus> {
+  try {
+    const client = new TwitterApi(bearerToken);
+    const user = await client.v2.userByUsername(username);
+
+    return {
+      username,
+      available: !user.data,
+    };
+  } catch (error) {
+    const twitterError = error as TwitterError;
+    if (twitterError.code === 50) {
+      // User not found error means the username is available
+      return {
+        username,
+        available: true,
+      };
+    }
+
+    return {
+      username,
+      available: false,
+      error: twitterError.message,
+    };
+  }
 }
 
 export async function checkHandles(bearerToken: string, usernames: string[]): Promise<HandleStatus[]> {
   const results: HandleStatus[] = [];
-  const uniqueUsernames = [...new Set(usernames)];
+  const uniqueUsernames = Array.from(new Set(usernames));
 
   for (const username of uniqueUsernames) {
     try {
-      const response = await fetch(
-        `https://api.twitter.com/2/users/by/username/${username}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${bearerToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          results.push({ username, status: 'available' });
-          continue;
-        }
-
-        if (response.status === 403) {
-          results.push({ username, status: 'suspended' });
-          continue;
-        }
-
-        throw new Error(`Twitter API error: ${response.status}`);
-      }
-
-      const data: TwitterResponse = await response.json();
-
-      if (data.errors) {
-        const error = data.errors[0];
-        if (error.type === 'not_found') {
-          results.push({ username, status: 'available' });
-        } else if (error.type === 'suspended') {
-          results.push({ username, status: 'suspended' });
-        } else {
-          results.push({ 
-            username, 
-            status: 'error',
-            error: error.detail || error.title 
-          });
-        }
-      } else if (data.data && data.data.length > 0) {
-        results.push({ username, status: 'taken' });
-      } else {
-        results.push({ username, status: 'available' });
-      }
+      const result = await checkHandle(bearerToken, username);
+      results.push(result);
     } catch (error) {
-      results.push({ 
-        username, 
-        status: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error'
+      const twitterError = error as TwitterError;
+      results.push({
+        username,
+        available: false,
+        error: twitterError.message,
       });
     }
   }

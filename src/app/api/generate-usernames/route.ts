@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(request: Request) {
@@ -31,20 +30,6 @@ export async function POST(request: Request) {
           temperature: 0.9,
         });
         generatedUsernames = openaiResponse.choices[0].message.content?.split('\n').filter(Boolean) || [];
-        break;
-
-      case 'anthropic':
-        const anthropic = new Anthropic({ apiKey });
-        const anthropicResponse = await anthropic.beta.messages.create({
-          model,
-          max_tokens: 1000,
-          system: 'You are a creative username generator. Generate unique, creative, and available usernames based on the given prompt. Return only the usernames, one per line.',
-          messages: [{
-            role: 'user',
-            content: `Generate ${numUsernames} unique usernames based on this theme or description: ${prompt}. Return only the usernames, one per line.`
-          }]
-        });
-        generatedUsernames = anthropicResponse.content[0].text.split('\n').filter(Boolean);
         break;
 
       case 'google':
