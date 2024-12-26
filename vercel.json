@@ -6,7 +6,8 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "10mb",
-        "runtime": "python3.9"
+        "runtime": "python3.9",
+        "handler": "vercel_app.handler"
       }
     },
     {
@@ -24,11 +25,12 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/vercel_app.py"
+      "dest": "vercel_app.py"
     }
   ],
   "env": {
     "FLASK_APP": "vercel_app.py",
-    "FLASK_ENV": "production"
+    "FLASK_ENV": "production",
+    "PYTHONPATH": "."
   }
 } 
