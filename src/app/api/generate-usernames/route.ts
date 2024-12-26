@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
       case 'anthropic':
         const anthropic = new Anthropic({ apiKey });
-        const anthropicResponse = await anthropic.messages.create({
+        const anthropicResponse = await anthropic.beta.messages.create({
           model,
           max_tokens: 1000,
           system: 'You are a creative username generator. Generate unique, creative, and available usernames based on the given prompt. Return only the usernames, one per line.',
