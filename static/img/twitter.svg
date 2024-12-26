@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300">
   <defs>
     <!-- Gradient definitions -->
     <linearGradient id="solanaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -10,12 +10,15 @@
       </stop>
     </linearGradient>
     
-    <!-- Background pattern -->
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <!-- Hexagon pattern for gaming background -->
+    <pattern id="hexagonPattern" width="50" height="44" patternUnits="userSpaceOnUse" patternTransform="scale(0.5)">
+      <path d="M25,0 L50,14.33 L50,43 L25,57.32 L0,43 L0,14.33 Z" 
+            fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1">
+        <animate attributeName="stroke-opacity" values="0.1;0.2;0.1" dur="3s" repeatCount="indefinite"/>
+      </path>
     </pattern>
     
-    <!-- Filters for glow effects -->
+    <!-- Glow filter -->
     <filter id="glow">
       <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
       <feMerge>
@@ -25,44 +28,55 @@
     </filter>
   </defs>
   
-  <!-- Background -->
-  <rect width="100%" height="100%" fill="#1A1A1A"/>
-  <rect width="100%" height="100%" fill="url(#grid)"/>
+  <!-- Background layers -->
+  <rect width="100%" height="100%" fill="#0A0A15"/>
+  <rect width="100%" height="100%" fill="url(#hexagonPattern)"/>
+  
+  <!-- Animated background lines -->
+  <g opacity="0.3">
+    <path d="M0,75 Q600,0 1200,75" stroke="url(#solanaGradient)" stroke-width="1" fill="none">
+      <animate attributeName="d" 
+               values="M0,75 Q600,0 1200,75;M0,75 Q600,150 1200,75;M0,75 Q600,0 1200,75" 
+               dur="10s" repeatCount="indefinite"/>
+    </path>
+    <path d="M0,150 Q600,75 1200,150" stroke="url(#solanaGradient)" stroke-width="1" fill="none">
+      <animate attributeName="d" 
+               values="M0,150 Q600,75 1200,150;M0,150 Q600,225 1200,150;M0,150 Q600,75 1200,150" 
+               dur="8s" repeatCount="indefinite"/>
+    </path>
+    <path d="M0,225 Q600,150 1200,225" stroke="url(#solanaGradient)" stroke-width="1" fill="none">
+      <animate attributeName="d" 
+               values="M0,225 Q600,150 1200,225;M0,225 Q600,300 1200,225;M0,225 Q600,150 1200,225" 
+               dur="12s" repeatCount="indefinite"/>
+    </path>
+  </g>
   
   <!-- Animated circles -->
-  <circle cx="100" cy="100" r="20" fill="none" stroke="url(#solanaGradient)" stroke-width="2">
-    <animate attributeName="r" values="20;25;20" dur="3s" repeatCount="indefinite"/>
+  <circle cx="150" cy="150" r="30" fill="none" stroke="url(#solanaGradient)" stroke-width="2">
+    <animate attributeName="r" values="30;35;30" dur="3s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="700" cy="100" r="20" fill="none" stroke="url(#solanaGradient)" stroke-width="2">
-    <animate attributeName="r" values="25;20;25" dur="3s" repeatCount="indefinite"/>
+  <circle cx="1050" cy="150" r="30" fill="none" stroke="url(#solanaGradient)" stroke-width="2">
+    <animate attributeName="r" values="35;30;35" dur="3s" repeatCount="indefinite"/>
   </circle>
   
   <!-- Main text with gradient -->
-  <text x="400" y="120" font-family="Arial, sans-serif" font-size="48" text-anchor="middle" filter="url(#glow)">
+  <text x="600" y="160" font-family="Arial, sans-serif" font-size="72" text-anchor="middle" filter="url(#glow)">
     <tspan fill="url(#solanaGradient)">X-TwitterUserFinder</tspan>
     <animate attributeName="opacity" values="0.8;1;0.8" dur="4s" repeatCount="indefinite"/>
   </text>
   
   <!-- Technology indicator -->
-  <g transform="translate(380, 140)">
-    <text x="20" y="20" font-family="Arial, sans-serif" font-size="14" fill="#14F195" text-anchor="middle">
+  <g transform="translate(600, 220)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="20" fill="white" text-anchor="middle">
       Powered by AI and Web3 Technology
     </text>
-    <rect x="0" y="25" width="40" height="4" fill="url(#solanaGradient)">
-      <animate attributeName="width" values="0;40;0" dur="2s" repeatCount="indefinite"/>
+    <rect x="-150" y="10" width="300" height="3" fill="url(#solanaGradient)">
+      <animate attributeName="width" values="0;300;0" dur="3s" repeatCount="indefinite"/>
     </rect>
   </g>
   
-  <!-- Decorative elements -->
-  <path d="M 50,50 L 750,50" stroke="url(#solanaGradient)" stroke-width="1" fill="none">
-    <animate attributeName="d" values="M 50,50 L 750,50;M 50,55 L 750,45;M 50,50 L 750,50" dur="5s" repeatCount="indefinite"/>
-  </path>
-  <path d="M 50,150 L 750,150" stroke="url(#solanaGradient)" stroke-width="1" fill="none">
-    <animate attributeName="d" values="M 50,150 L 750,150;M 50,145 L 750,155;M 50,150 L 750,150" dur="5s" repeatCount="indefinite"/>
-  </path>
-  
   <!-- Creator credit -->
-  <text x="400" y="180" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle" opacity="0.8">
-    made by @MoneroSolana
+  <text x="600" y="270" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle" opacity="0.8">
+    Made by @MoneroSolana
   </text>
 </svg>
