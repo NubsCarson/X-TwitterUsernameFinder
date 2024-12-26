@@ -40,13 +40,11 @@ export async function UsernameGenerator(options: UsernameGeneratorOptions): Prom
         const anthropicResponse = await anthropic.messages.create({
           model,
           max_tokens: 1000,
-          messages: [
-            {
-              role: 'user',
-              content: `Generate ${numUsernames} unique usernames based on this theme or description: ${prompt}. Return only the usernames, one per line.`
-            }
-          ],
-          temperature: 0.9,
+          system: 'You are a creative username generator. Generate unique, creative, and available usernames based on the given prompt. Return only the usernames, one per line.',
+          messages: [{
+            role: 'user',
+            content: `Generate ${numUsernames} unique usernames based on this theme or description: ${prompt}. Return only the usernames, one per line.`
+          }]
         });
         usernames = anthropicResponse.content[0].text.split('\n').filter(Boolean);
         break;

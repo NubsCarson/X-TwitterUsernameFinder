@@ -52,10 +52,13 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ status: 'success' });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Pro user registration error:', err);
     return NextResponse.json(
-      { status: 'error', message: err.message },
+      { 
+        status: 'error', 
+        message: err instanceof Error ? err.message : 'An unknown error occurred'
+      },
       { status: 500 }
     );
   }
