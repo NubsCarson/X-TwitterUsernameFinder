@@ -1,71 +1,81 @@
 import { TwitterApi } from 'twitter-api-v2';
 
-export class TwitterHandleChecker {
-  private client: TwitterApi;
-  private rateLimit: number;
-  private requestsMade: number;
-  private resetTime: Date;
+interface TwitterResponse {
+  data?: {
+    id: string;
+    name: string;
+    username: string;
+  }[];
+  errors?: {
+    detail: string;
+    title: string;
+    type: string;
+  }[];
+}
 
-  constructor(bearerToken: string) {
-    this.client = new TwitterApi(bearerToken);
-    this.rateLimit = 50;
-    this.requestsMade = 0;
-    this.resetTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
-  }
+interface HandleStatus {
+  username: string;
+  status: 'available' | 'taken' | 'suspended' | 'error';
+  error?: string;
+}
 
-  private async waitWithCountdown(seconds: number, onProgress?: (remaining: number) => void) {
-    const startTime = Date.now();
-    while (Date.now() - startTime < seconds * 1000) {
-      const remaining = seconds - Math.floor((Date.now() - startTime) / 1000);
-      if (onProgress) {
-        onProgress(remaining);
-      }
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
+export async function checkHandles(bearerToken: string, usernames: string[]): Promise<HandleStatus[]> {
+  const results: HandleStatus[] = [];
+  const uniqueUsernames = [...new Set(usernames)];
 
-  async checkHandle(handle: string): Promise<{ handle: string; available?: boolean; error?: string }> {
-    if (this.requestsMade >= this.rateLimit) {
-      const waitTime = Math.max(0, (this.resetTime.getTime() - Date.now()) / 1000);
-      if (waitTime > 0) {
-        await this.waitWithCountdown(waitTime);
-        this.requestsMade = 0;
-        this.resetTime = new Date(Date.now() + 15 * 60 * 1000);
-      }
-    }
-
+  for (const username of uniqueUsernames) {
     try {
-      const response = await this.client.v2.userByUsername(handle);
-      this.requestsMade++;
-      return { handle, available: !response.data };
-    } catch (error) {
-      if (error.code === 429) {
-        // Rate limit hit
-        const resetTime = error.rateLimit?.reset;
-        if (resetTime) {
-          const waitTime = Math.max(0, resetTime - Math.floor(Date.now() / 1000));
-          await this.waitWithCountdown(waitTime);
+      const response = await fetch(
+        `https://api.twitter.com/2/users/by/username/${username}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${bearerToken}`,
+          },
         }
-        return this.checkHandle(handle);
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          results.push({ username, status: 'available' });
+          continue;
+        }
+
+        if (response.status === 403) {
+          results.push({ username, status: 'suspended' });
+          continue;
+        }
+
+        throw new Error(`Twitter API error: ${response.status}`);
       }
-      return { handle, error: error.message };
+
+      const data: TwitterResponse = await response.json();
+
+      if (data.errors) {
+        const error = data.errors[0];
+        if (error.type === 'not_found') {
+          results.push({ username, status: 'available' });
+        } else if (error.type === 'suspended') {
+          results.push({ username, status: 'suspended' });
+        } else {
+          results.push({ 
+            username, 
+            status: 'error',
+            error: error.detail || error.title 
+          });
+        }
+      } else if (data.data && data.data.length > 0) {
+        results.push({ username, status: 'taken' });
+      } else {
+        results.push({ username, status: 'available' });
+      }
+    } catch (error) {
+      results.push({ 
+        username, 
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
 
-  async checkHandles(usernames: string[], onProgress?: (progress: number, result: any) => void): Promise<Array<{ handle: string; available?: boolean; error?: string }>> {
-    const results: Array<{ handle: string; available?: boolean; error?: string }> = [];
-    const total = usernames.length;
-    let checked = 0;
-
-    for (const username of usernames) {
-      const result = await this.checkHandle(username);
-      results.push(result);
-      checked++;
-      if (onProgress) {
-        onProgress((checked / total) * 100, result);
-      }
-    }
-
-    return results;
-  }
+  return results;
 } 
