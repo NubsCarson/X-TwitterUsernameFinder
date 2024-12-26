@@ -114,3 +114,34 @@ MIT License - Fork it, ship it, just keep it based.
 
 <p align="center">If this repo goes hard, drop it a ⭐️</p>
 <p align="center">Built different. Stay based. Ship code. 🚀</p>
+
+# X Twitter Username Finder
+
+A tool to help you find available Twitter/X usernames using AI.
+
+## Deployment
+
+This project is deployed on Vercel with automatic deployments from the main branch.
+
+## Features
+
+- Generate creative usernames using AI (OpenAI, Anthropic, or Google)
+- Check username availability on Twitter/X
+- Copy generated usernames to clipboard
+- Dark mode interface
+- Responsive design
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies with `npm install`
+3. Set up environment variables
+4. Run the development server with `npm run dev`
+
+## Contributing
+
+Contributions are welcome! Please read our contributing guidelines for details.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

@@ -1,4 +1,5 @@
 {
+  // Vercel deployment configuration
   "version": 2,
   "framework": "nextjs",
   "builds": [
@@ -6,9 +7,5 @@
       "src": "package.json",
       "use": "@vercel/next"
     }
-  ],
-  "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "SOLANA_RPC_ENDPOINT": "@solana_rpc_endpoint"
-  }
+  ]
 } 
