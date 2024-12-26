@@ -1,19 +1,21 @@
-import os
-import asyncio
-import eventlet
-eventlet.monkey_patch()
-
-import tweepy
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+import os
+import asyncio
+import tweepy
+import openai
+import anthropic
+import google.generativeai as genai
+import json
+import base58
+import nacl.signing
+import requests
+import nest_asyncio
 from datetime import datetime, timedelta
 import time
-import nest_asyncio
-import nacl.signing
-import base58
-import requests
+import httpx
 
 # Load environment variables
 load_dotenv()
@@ -25,7 +27,7 @@ app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'fallback_secret_key_for_development')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pro_users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins="*")
+socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins="*")
 db = SQLAlchemy(app)
 
 # Create a new event loop for the application
@@ -89,87 +91,30 @@ class TwitterHandleChecker:
             await asyncio.sleep(1)
 
 class UsernameGenerator:
-    def __init__(self, provider, model, api_key):
-        self.provider = provider
-        self.model = model
+    def __init__(self, api_key):
         self.api_key = api_key
-        self.loop = asyncio.get_event_loop()
         self.client = None
-        
+
     def _initialize_client(self):
-        if self.client is not None:
-            return
-            
-        if self.provider == 'openai':
-            from openai import AsyncOpenAI
-            self.client = AsyncOpenAI(api_key=self.api_key)
-        elif self.provider == 'anthropic':
-            import anthropic
-            self.client = anthropic.AsyncAnthropic(api_key=self.api_key)
-        elif self.provider == 'google':
-            import google.generativeai as genai
-            genai.configure(api_key=self.api_key)
-            self.client = genai.GenerativeModel(self.model)
+        if not self.client:
+            from openai import OpenAI
+            self.client = OpenAI(api_key=self.api_key)
 
-    def generate_usernames(self, prompt, count=10):
+    def generate_usernames(self, prompt, count=5):
         self._initialize_client()
-        return self.loop.run_until_complete(self._generate_usernames(prompt, count))
-
-    async def _generate_usernames(self, prompt, count=10):
         try:
-            if self.provider == 'openai':
-                return await self._generate_openai(prompt, count)
-            elif self.provider == 'anthropic':
-                return await self._generate_anthropic(prompt, count)
-            elif self.provider == 'google':
-                return await self._generate_google(prompt, count)
-            else:
-                return [f"Unsupported provider: {self.provider}"]
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a creative username generator. Generate unique, available, and memorable usernames."},
+                    {"role": "user", "content": f"Generate {count} unique usernames based on: {prompt}"}
+                ]
+            )
+            usernames = response.choices[0].message.content.strip().split('\n')
+            return [username.strip('- ') for username in usernames if username.strip('- ')]
         except Exception as e:
-            return [str(e)]
-
-    async def _generate_openai(self, prompt, count):
-        response = await self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are a creative username generator. Generate usernames that are between 4-15 characters long, using only letters, numbers, and underscores. Each username should be unique and suitable for social media. Format the response as a simple comma-separated list without numbering or extra text."},
-                {"role": "user", "content": f"Generate {count} unique usernames based on: {prompt}"}
-            ]
-        )
-        return self._clean_usernames(response.choices[0].message.content, count)
-
-    async def _generate_anthropic(self, prompt, count):
-        response = await self.client.messages.create(
-            model=self.model,
-            max_tokens=1000,
-            system="You are a creative username generator. Generate usernames that are between 4-15 characters long, using only letters, numbers, and underscores. Each username should be unique and suitable for social media. Format the response as a simple comma-separated list without numbering or extra text.",
-            messages=[{
-                "role": "user",
-                "content": f"Generate {count} unique usernames based on: {prompt}"
-            }]
-        )
-        return self._clean_usernames(response.content, count)
-
-    async def _generate_google(self, prompt, count):
-        response = await self.client.generate_content_async(
-            f"""Generate {count} unique usernames based on this theme: {prompt}
-            Requirements:
-            - Between 4-15 characters long
-            - Use only letters, numbers, and underscores
-            - Suitable for social media
-            - Format as comma-separated list
-            - No numbering or extra text"""
-        )
-        return self._clean_usernames(response.text, count)
-
-    def _clean_usernames(self, content, count):
-        # Clean up the response and split into usernames
-        usernames = [
-            username.strip().strip(',-')  # Remove spaces and any trailing commas or dashes
-            for username in content.strip().split(',')
-            if username.strip()  # Filter out empty strings
-        ]
-        return usernames[:count]  # Ensure we only return the requested number of usernames
+            print(f"Error generating usernames: {e}")
+            return []
 
 @app.route('/')
 def index():
@@ -192,7 +137,7 @@ def handle_generate(data):
     prompt = data.get('prompt')
     count = int(data.get('count', 10))
 
-    generator = UsernameGenerator(provider, model, api_key)
+    generator = UsernameGenerator(api_key)
     usernames = generator.generate_usernames(prompt, count)
     emit('usernames', {'usernames': usernames})
 
@@ -390,4 +335,4 @@ def get_config():
 
 if __name__ == '__main__':
     load_dotenv()
-    socketio.run(app, debug=True) 
+    socketio.run(app, debug=True, host='127.0.0.1', port=5000) 
