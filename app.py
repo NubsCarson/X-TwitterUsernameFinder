@@ -321,30 +321,8 @@ def get_config():
 if __name__ == '__main__':
     load_dotenv()
     app.run(debug=True)  # For local development
-    
+
 # Vercel handler
-def handler(request):
+def handler(event, context):
     """Handle requests in a serverless context."""
-    if request.method == 'POST':
-        with app.test_client() as client:
-            response = client.post(
-                request.url, 
-                json=request.json,
-                headers=request.headers
-            )
-            return Response(
-                response.get_data(),
-                status=response.status_code,
-                headers=dict(response.headers)
-            )
-    else:
-        with app.test_client() as client:
-            response = client.get(
-                request.url,
-                headers=request.headers
-            )
-            return Response(
-                response.get_data(),
-                status=response.status_code,
-                headers=dict(response.headers)
-            ) 
+    return app(event, context) 
