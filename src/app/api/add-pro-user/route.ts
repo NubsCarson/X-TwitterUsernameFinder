@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     } catch (err) {
       console.error('Signature verification failed:', err);
       return NextResponse.json(
-        { status: 'error', message: `Invalid signature: ${err.message}` },
+        { status: 'error', message: 'Invalid signature' },
         { status: 400 }
       );
     }

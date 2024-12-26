@@ -1,30 +1,23 @@
 import { NextResponse } from 'next/server';
-import { UsernameGenerator, AIProvider, AIModel } from '@/lib/ai';
+import { UsernameGenerator } from '@/lib/ai';
 
 export async function POST(request: Request) {
   try {
-    const { provider, model, api_key, prompt, count } = await request.json();
+    const { provider, model, apiKey, prompt, numUsernames } = await request.json();
 
-    if (!api_key || !prompt) {
-      return NextResponse.json(
-        { error: 'Missing required parameters' },
-        { status: 400 }
-      );
-    }
-
-    const generator = new UsernameGenerator(
-      api_key,
-      provider as AIProvider,
-      model as AIModel
-    );
-
-    const usernames = await generator.generateUsernames(prompt, count || 10);
+    const usernames = await UsernameGenerator({
+      provider,
+      model,
+      apiKey,
+      prompt,
+      numUsernames
+    });
 
     return NextResponse.json({ usernames });
   } catch (error) {
     console.error('Error generating usernames:', error);
     return NextResponse.json(
-      { error: error.message },
+      { error: 'Failed to generate usernames' },
       { status: 500 }
     );
   }
