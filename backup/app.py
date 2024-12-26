@@ -323,28 +323,7 @@ if __name__ == '__main__':
     app.run(debug=True)  # For local development
 
 # Vercel serverless handler
-def handler(event, context):
-    """Serverless function handler for Vercel."""
-    # Get the HTTP method and path from the event
-    http_method = event.get('method', 'GET')
-    path = event.get('path', '/')
-    
-    # Create a test client
-    client = app.test_client()
-    
-    # Prepare headers and body
-    headers = event.get('headers', {})
-    body = event.get('body', '')
-    
-    # Make the request using the test client
-    if http_method == 'POST':
-        response = client.post(path, headers=headers, json=json.loads(body) if body else None)
-    else:
-        response = client.get(path, headers=headers)
-    
-    # Return the response in the format Vercel expects
-    return {
-        'statusCode': response.status_code,
-        'headers': dict(response.headers),
-        'body': response.get_data(as_text=True)
-    } 
+def handler(environ, start_response):
+    """WSGI handler for Vercel."""
+    response = app(environ, start_response)
+    return response 
