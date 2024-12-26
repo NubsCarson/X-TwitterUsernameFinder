@@ -7,7 +7,11 @@ export async function POST(request: Request) {
   try {
     const { provider, model, apiKey, prompt, numUsernames } = await request.json();
 
-    let usernames: string[] = [];
+    if (!provider || !model || !apiKey || !prompt || !numUsernames) {
+      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+    }
+
+    let generatedUsernames: string[] = [];
 
     switch (provider) {
       case 'openai':
@@ -26,7 +30,7 @@ export async function POST(request: Request) {
           ],
           temperature: 0.9,
         });
-        usernames = openaiResponse.choices[0].message.content?.split('\n').filter(Boolean) || [];
+        generatedUsernames = openaiResponse.choices[0].message.content?.split('\n').filter(Boolean) || [];
         break;
 
       case 'anthropic':
@@ -34,49 +38,45 @@ export async function POST(request: Request) {
         const anthropicResponse = await anthropic.messages.create({
           model,
           max_tokens: 1000,
-          messages: [
-            {
-              role: 'user',
-              content: `Generate ${numUsernames} unique usernames based on this theme or description: ${prompt}. Return only the usernames, one per line.`
-            }
-          ],
-          temperature: 0.9,
+          system: 'You are a creative username generator. Generate unique, creative, and available usernames based on the given prompt. Return only the usernames, one per line.',
+          messages: [{
+            role: 'user',
+            content: `Generate ${numUsernames} unique usernames based on this theme or description: ${prompt}. Return only the usernames, one per line.`
+          }]
         });
-        usernames = anthropicResponse.content[0].text.split('\n').filter(Boolean);
+        generatedUsernames = anthropicResponse.content[0].text.split('\n').filter(Boolean);
         break;
 
       case 'google':
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-        const googleResponse = await model.generateContent(
+        const googleModel = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const googleResponse = await googleModel.generateContent(
           `Generate ${numUsernames} unique usernames based on this theme or description: ${prompt}. Return only the usernames, one per line.`
         );
         const result = await googleResponse.response;
-        usernames = result.text().split('\n').filter(Boolean);
+        generatedUsernames = result.text().split('\n').filter(Boolean);
         break;
 
       default:
-        throw new Error('Unsupported AI provider');
+        return NextResponse.json({ error: 'Unsupported AI provider' }, { status: 400 });
     }
 
-    // Clean up usernames (remove numbers, special characters, etc. if needed)
-    usernames = usernames
+    // Clean up usernames
+    generatedUsernames = generatedUsernames
       .map(username => username.trim()
-        // Remove numbering patterns like "1.", "1)", "(1)", etc.
         .replace(/^\d+\.\s*/, '')
         .replace(/^\d+\)\s*/, '')
         .replace(/^\(\d+\)\s*/, '')
-        // Remove any remaining numbers at the start
         .replace(/^\d+\s*/, '')
       )
       .filter(username => username.length > 0 && username.length <= 15)
       .slice(0, numUsernames);
 
-    return NextResponse.json({ usernames });
-  } catch (error) {
+    return NextResponse.json({ usernames: generatedUsernames });
+  } catch (error: unknown) {
     console.error('Error generating usernames:', error);
     return NextResponse.json(
-      { error: 'Failed to generate usernames' },
+      { error: error instanceof Error ? error.message : 'An unknown error occurred' },
       { status: 500 }
     );
   }
