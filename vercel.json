@@ -1,10 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
   "framework": "nextjs",
-  "outputDirectory": ".next",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
   "env": {
     "MONGODB_URI": "@mongodb_uri",
     "SOLANA_RPC_ENDPOINT": "@solana_rpc_endpoint"
